@@ -1,3 +1,7 @@
+## 📜 License
+
+This project is licensed under the [MIT License](https://github.com/ehsanakhlaghi/SmartAdvisor/blob/main/LICENSE).
+
 # SmartAdvisor 🔒🤖  
 **LLM-Based Security Recommendation Engine for Docker and Kubernetes Configurations**
 
