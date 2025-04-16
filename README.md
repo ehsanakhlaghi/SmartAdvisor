@@ -46,9 +46,42 @@ python app.py --input sample.yaml
 
 flask run
 
-Benchmark Dataset
+****Benchmark Dataset**
 
-This repo includes a curated dataset of 530 real-world container configuration files, labeled with security annotations. Used for evaluating precision, recall, and remediation accuracy.
+This repo includes a curated dataset of 530 real-world container configuration files, labeled with security annotations. Used for evaluating precision, recall, and remediation accuracy.**
+
+**Citation
+
+If you use SmartAdvisor in your research, please cite our paper:**
+
+@inproceedings{akhlaghi2025smartadvisor,
+  title={SmartAdvisor: LLM-Based Security Recommendation Engine for Docker and Kubernetes Configurations},
+  author={Akhlaghisabahi, Ehsan},
+  booktitle={Proceedings of the IEEE Conference on Secure AI Systems},
+  year={2025}
+}
+
+
+**Acknowledgment
+
+This project was developed at Queen's University as part of graduate research in AI and security. We thank OpenAI for research API access and the ECE department for feedback and testing support.**
+
+**License
+
+This project is released under the MIT License.**
+
+
+---
+
+### 📌 Next Step for You:
+1. **Create a new GitHub repo** named `SmartAdvisor` (or push to existing).
+2. **Add this `README.md`** to the root of your project folder.
+3. (Optional) Add a `LICENSE` file — [MIT License template](https://opensource.org/licenses/MIT).
+
+---
+
+Would you like help writing the **MIT LICENSE file**, or updating your LaTeX paper to cite your GitHub repo now?
+
 
 
 
