@@ -1,0 +1,166 @@
+# 📁 Project Structure: AI-Powered Container Misconfiguration Scanner
+
+project_root/
+├── static_scanner/
+│   ├── __init__.py
+│   ├── trivy_wrapper.py        # Interface to Trivy CLI
+│   ├── kubescape_wrapper.py    # Run and parse Kubescape results
+│   └── kube_linter_wrapper.py  # KubeLinter integration
+│
+├── ai_assistant/
+│   ├── __init__.py
+│   ├── prompt_templates.py     # Prompts for detecting/fixing misconfigs
+│   ├── openai_llm.py           # Interface with OpenAI API
+│   └── fixer_engine.py         # Suggest/auto-fix misconfigurations
+│
+├── ci_integration/
+│   ├── github_action.yml       # GitHub Actions config
+│   └── gitlab_ci.yml           # GitLab CI config
+│
+├── dashboard/
+│   ├── main.py                 # Flask or FastAPI server
+│   ├── views.py                # Endpoints for UI
+│   └── templates/
+│       └── index.html          # Visualization of scan results
+│
+├── datasets/
+│   ├── test_cases.yaml         # Sample misconfigured YAMLs
+│   └── real_world_helm/        # Collection of Helm charts from ArtifactHub
+│
+├── README.md
+└── requirements.txt
+
+
+# ✅ Sample: Misconfigured Kubernetes YAML
+test_pod.yaml = """
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-test
+spec:
+  containers:
+  - name: nginx
+    image: nginx:latest
+    securityContext:
+      privileged: true
+    ports:
+    - containerPort: 80
+  hostNetwork: true
+  automountServiceAccountToken: true
+"""
+
+# 🧠 Prompt Template to Detect and Fix Misconfig
+prompt_template = """
+You are a Kubernetes security assistant. Given a Kubernetes YAML manifest, detect any misconfigurations based on best practices (CIS Benchmark, OWASP CSVS).
+For each misconfiguration:
+1. Describe the problem
+2. Explain the risk
+3. Suggest a corrected version of the YAML snippet
+
+---
+Manifest:
+{text}
+"""
+
+# 🧪 GitHub Action for Scan Integration (.github/workflows/kube-check.yml)
+name: KubeMisconfigScan
+
+on:
+  push:
+    paths:
+      - '**.yaml'
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+      - name: Run Trivy Config Scan
+        run: |
+          trivy config . > results.txt
+      - name: Upload Results
+        uses: actions/upload-a
+# container_security_checker.py
+
+"""
+Base structure for Container Misconfiguration Detection Tool
+"""
+
+import os
+import json
+from typing import List, Dict
+
+class ContainerConfigChecker:
+    def __init__(self, config_path: str):
+        self.config_path = config_path
+        self.findings = []
+
+    def load_config(self) -> str:
+        try:
+            with open(self.config_path, 'r') as f:
+                config_data = f.read()
+            return config_data
+        except Exception as e:
+            raise FileNotFoundError(f"Error reading config file: {e}")
+
+    def check_base_image(self, dockerfile_lines: List[str]):
+        for line in dockerfile_lines:
+            if line.startswith("FROM"):
+                if "latest" in line.lower():
+                    self.findings.append("[WARNING] Base image uses 'latest' tag. Use specific versions.")
+                if "scratch" in line.lower():
+                    self.findings.append("[INFO] Base image is 'scratch'. Ensure minimal image is needed.")
+
+    def check_user_instruction(self, dockerfile_lines: List[str]):
+        if not any("USER" in line for line in dockerfile_lines):
+            self.findings.append("[WARNING] No USER instruction found. Containers run as root by default.")
+
+    def check_add_vs_copy(self, dockerfile_lines: List[str]):
+        for line in dockerfile_lines:
+            if line.strip().startswith("ADD"):
+                self.findings.append("[WARNING] 'ADD' used instead of 'COPY'. 'COPY' is preferred unless needed.")
+
+    def run_checks(self):
+        dockerfile_content = self.load_config()
+        lines = dockerfile_content.splitlines()
+        self.check_base_image(lines)
+        self.check_user_instruction(lines)
+        self.check_add_vs_copy(lines)
+        return self.findings
+
+    def export_report(self, output_path: str = "report.json"):
+        try:
+            with open(output_path, 'w') as f:
+                json.dump({"findings": self.findings}, f, indent=4)
+            print(f"[INFO] Report exported to {output_path}")
+        except Exception as e:
+            print(f"[ERROR] Failed to write report: {e}")
+
+    def export_html_report(self, output_path: str = "report.html"):
+        try:
+            with open(output_path, 'w') as f:
+                f.write("<html><head><title>Dockerfile Security Report</title></head><body>")
+                f.write("<h1>Misconfiguration Check Report</h1><ul>")
+                for finding in self.findings:
+                    f.write(f"<li>{finding}</li>")
+                f.write("</ul></body></html>")
+            print(f"[INFO] HTML report exported to {output_path}")
+        except Exception as e:
+            print(f"[ERROR] Failed to write HTML report: {e}")
+
+
+if __name__ == "__main__":
+    checker = ContainerConfigChecker("Dockerfile")
+    results = checker.run_checks()
+    print("\nMisconfiguration Check Report:\n")
+    for finding in results:
+        print(finding)
+
+    # Export the findings to a JSON report
+    checker.export_report("dockerfile_check_report.json")
+
+    # Export the findings to an HTML report
+    checker.export_html_report("dockerfile_check_report.html")
